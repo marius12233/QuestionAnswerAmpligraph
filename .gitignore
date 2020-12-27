@@ -1,0 +1,5 @@
+__pycache__
+*.pkl
+*.log
+*.ps
+ampligraph_embeddings
