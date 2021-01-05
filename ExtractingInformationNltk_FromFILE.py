@@ -11,7 +11,11 @@ from termcolor import cprint # used to customize terminal output and facilitate 
 import csv # used to read and write .csv files
 import ExtractTextFromWeb #script to retrieve text from a url
 import subprocess, sys # used to subprocess to add triples
+<<<<<<< HEAD
 from soie import text2csvtriples
+=======
+
+>>>>>>> 0c0540049da83f8841ca4ba8a2300bcbdf10859b
 
 # Relative Path
 filePath = os.path.dirname(os.path.realpath(__file__))
@@ -39,7 +43,11 @@ else:
     os.mkdir(str(filePath)+'/NamedEntity')
 
 # triple save file
+<<<<<<< HEAD
 file = open(str(filePath)+'/Triple/pattern_triples.csv', 'w', newline='')
+=======
+file = open(str(filePath)+'/Triple/triple.csv', 'w', newline='')
+>>>>>>> 0c0540049da83f8841ca4ba8a2300bcbdf10859b
 writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
 ############ ENVIRONMENT SETUP  ############
@@ -56,11 +64,19 @@ os.chdir("Text/")
 for file_read in glob.glob("*.txt"):
     number_files += 1
     text += open(file_read, "r").read() +".\n"
+<<<<<<< HEAD
 os.chdir("../")
 text2csvtriples(text)
 cprint("\n\n############ INPUT TEXT ############","green", attrs=['bold'])
 cprint("\nNumero di file letti: "+str(number_files),"blue", attrs=['bold'])
 
+=======
+
+cprint("\n\n############ INPUT TEXT ############","green", attrs=['bold'])
+cprint("\nNumero di file letti: "+str(number_files),"blue", attrs=['bold'])
+
+print(text)
+>>>>>>> 0c0540049da83f8841ca4ba8a2300bcbdf10859b
 
 
 cprint("\n############ PHASE CHINKING ############","green", attrs=['bold'])
@@ -205,5 +221,10 @@ file.close()
 
 ## triple addition phase to extend dataset when we have multiple subjects
 cprint("\n############ PHASE ADDITION TRIPLE ############\n\n","green", attrs=['bold'])
+<<<<<<< HEAD
 #subprocess.Popen('ulimit -v unlimited', shell=True)
 subprocess.Popen([sys.executable, "TripleExtension.py"]) 
+=======
+subprocess.Popen('ulimit -v unlimited', shell=True)
+subprocess.Popen([sys.executable, "/home/mivia/ProgettoTS/TripleExtension.py"]) 
+>>>>>>> 0c0540049da83f8841ca4ba8a2300bcbdf10859b
