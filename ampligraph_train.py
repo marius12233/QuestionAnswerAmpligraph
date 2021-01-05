@@ -3,7 +3,7 @@ import pandas as pd
 import ampligraph
 from ampligraph.datasets import load_from_csv
 from ampligraph.evaluation import train_test_split_no_unseen 
-from ampligraph.latent_features import ComplEx
+from ampligraph.latent_features import ComplEx, DistMult, HolE
 from ampligraph.latent_features import save_model, restore_model
 from ampligraph.evaluation import evaluate_performance
 from ampligraph.evaluation import mr_score, mrr_score, hits_at_n_score
@@ -21,14 +21,14 @@ relations = np.unique(X[:, 1])
 
 num_test = int(len(X) * (10/ 100))
 
-data = {}
-data['train'], data['test'] = train_test_split_no_unseen(X, test_size=num_test, seed=0, allow_duplication=False) 
+#data = {}
+#data['train'], data['test'] = train_test_split_no_unseen(X, test_size=num_test, seed=0, allow_duplication=False) 
 
 #Build model
-model = ComplEx(batches_count=100, 
+model = ComplEx(batches_count=200, 
                 seed=0, 
-                epochs=200, 
-                k=150, 
+                epochs=50, 
+                k=50, 
                 eta=5,
                 optimizer='adam', 
                 optimizer_params={'lr':1e-3},
@@ -42,6 +42,7 @@ positives_filter = X
 tf.logging.set_verbosity(tf.logging.ERROR)
 
 #Fit the model
+"""
 print(data['train'].shape)
 model.fit(data['train'], early_stopping = False)
 
@@ -61,9 +62,11 @@ hits_3 = hits_at_n_score(ranks, n=3)
 print("Hits@3: %.2f" % (hits_3))
 hits_1 = hits_at_n_score(ranks, n=1)
 print("Hits@1: %.2f" % (hits_1))
+
 create_tensorboard_visualizations(model, 'ampligraph_embeddings')
 
 
+"""
 model.fit(X, early_stopping = False)
 
 save_model(model, './best_model.pkl')

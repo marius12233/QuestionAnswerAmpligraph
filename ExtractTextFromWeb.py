@@ -6,13 +6,15 @@ import re # used to set a regular expression
 from termcolor import cprint # used to customize terminal output and facilitate understanding
 
 # function that allows you to extrapolate the text from the songs that the user wants to analyze
-def selectText():
+def selectText(start=None, stop=None):
 
     inputUser = True
     cprint("\nFrom which side do you want to start the analysis? (1 - 30): ","blue", attrs=['bold'])
-    start = input("---> ")
+    if not start:
+        start = input("---> ")
     cprint("\nAt what song do you want to finish the analysis? (1 - 30): ","blue", attrs=['bold'])
-    stop = input("---> ")
+    if not stop:
+        stop = input("---> ")
 
     # check that the numbers of the songs selected by the user are correct
     while( inputUser ):

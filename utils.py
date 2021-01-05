@@ -11,4 +11,5 @@ def merge_csv(pattern_path, dep_path, dest_path):
     df_dest.to_csv(dest_path, index=False)
 
 if __name__=="__main__":
+    print("Merging csv...")
     merge_csv("Triple/pattern_triples.csv", "Triple/dep_triples.csv","Triple/complete_triples.csv")

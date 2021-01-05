@@ -8,10 +8,17 @@ from nltk.draw import TreeView # viewing and creating tree folder
 from nltk.tag.util import untag # tree to triple
 import os, shutil # folder management
 from termcolor import cprint # used to customize terminal output and facilitate understanding
+
 import csv # used to read and write .csv files
 import ExtractTextFromWeb #script to retrieve text from a url
 import subprocess, sys # used to subprocess to add triples
 from soie import text2csvtriples
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--start", help="insert start Canto.", type=str)
+parser.add_argument("--stop", help="insert end Canto.", type=str)
+args=parser.parse_args()
 
 # Relative Path
 filePath = os.path.dirname(os.path.realpath(__file__))
@@ -48,8 +55,12 @@ else:
 ############ PHASE LOADING TEXT OR FROM WEBSITE OR FROM FILE ############
 
 ### uncomment to fetch text dynamically
-cprint("\n\n############ INPUT TEXT: select the range [start,stop] ############","green", attrs=['bold'])
-text = ExtractTextFromWeb.selectText()
+
+if args.start and args.stop:
+    text = ExtractTextFromWeb.selectText(start=args.start, stop=args.stop)
+else:   
+    cprint("\n\n############ INPUT TEXT: select the range [start,stop] ############","green", attrs=['bold'])
+    text = ExtractTextFromWeb.selectText()
 
 # print(text)
 
@@ -134,13 +145,13 @@ for j in range(1, len(texts), 1 ):
 
         # named entity recognition and saving graph
         namedEnt = nltk.ne_chunk(word_tagged_sts, binary=False)
-        TreeView(namedEnt)._cframe.print_to_file(str(filePath)+'/NamedEntity/'+str(i)+'_namedEntity.ps')
+        #TreeView(namedEnt)._cframe.print_to_file(str(filePath)+'/NamedEntity/'+str(i)+'_namedEntity.ps')
         
         chunk1=0
         chunk2=0
 
         # saving graph of the knowledge of the unprocessed sentence
-        TreeView(chunked_sts)._cframe.print_to_file(str(filePath)+'/Sentences/'+str(i)+'_sentence.ps')
+        #TreeView(chunked_sts)._cframe.print_to_file(str(filePath)+'/Sentences/'+str(i)+'_sentence.ps')
        
         # count of patters found
         for subtree in chunked_sts.subtrees(filter=lambda t: t.label() == 'CHUNK1'):
@@ -177,13 +188,13 @@ for j in range(1, len(texts), 1 ):
             subtree.set_label("CHUNK")
 
         # saving graph of the knowledge of the processed sentence
-        TreeView(chunked_sts)._cframe.print_to_file(str(filePath)+'/Sentences/'+str(i)+'_sentenceProccessed.ps')
+        #TreeView(chunked_sts)._cframe.print_to_file(str(filePath)+'/Sentences/'+str(i)+'_sentenceProccessed.ps')
 
         cprint("\nPHASE CHUNK TO TRIPLE CONVERSION\nTriple identified:","blue", attrs=['bold'])
         chunk = []
         
         # triple save file
-        file = open(str(filePath)+'/Triple/pattern_triples.csv', 'a', newline='')
+        file = open(str(filePath)+'/Triple/pattern_triples.csv', 'a', newline='', encoding='utf-8')
         writer = csv.writer(file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 
         for subtree in chunked_sts.subtrees(filter=lambda t: t.label() == 'CHUNK'):

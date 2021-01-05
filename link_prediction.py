@@ -7,34 +7,46 @@ import ampligraph
 from ampligraph.evaluation import evaluate_performance
 from ampligraph.latent_features import save_model, restore_model
 from scipy import spatial
-from sent2vec.vectorizer import Vectorizer
 import numpy as np
 import copy
 from sent2vec.vectorizer import Vectorizer
 import difflib
+from bert_score import score
+from bert_score import BERTScorer
+import tensorflow as tf
+import tensorflow_hub
 
-def most_similar_sentences(query, sentences):
-    return difflib.get_close_matches(query, sentences)
 
 def sentence_similarity2(vec1, vec2):
     dist = spatial.distance.cosine(vec1, vec2)
     #dist = np.linalg.norm(vec1 - vec2)
     #dist = 100 - dist
-    return 1-dist
+    return dist
 
-def sentence_similarity3(text1, text2):
-    #nlp = spacy.load('en')
-    nlp = spacy.load("en_core_web_md")
-    doc1 = nlp(text1)
-    doc2 = nlp(text2)
-    similarity = doc1.similarity(doc2)
-    return similarity
+def most_similar_sentences(query, sentences):
+    return difflib.get_close_matches(query, sentences)
 
-def heapsort(iterable):
-    h = []
-    for value in iterable:
-        heappush(h, value)
-    return [heappop(h) for i in range(len(h))]
+def load_question_from_json(path="Question/question.json"): 
+    with open(path, "r") as fp:
+        question=json.load(fp)
+    question=json.loads(question)
+    subj, rel, obj = None, None, None
+    triple = [subj, rel, obj]
+    objs = ("subject", "predicate", "object")
+
+    #TO DO: case in which question is a list
+    for i, obj in enumerate(objs):
+        if question[obj]["type"]=="resource":
+            triple[i] = question[obj]["value"] 
+        elif question[obj]["type"]=="list":
+            x=[]
+            for object_ in question[obj]["list"]:
+                x.append(object_["value"])
+            triple[i] = x
+        elif question[obj]["type"]=="missing":
+            triple[i]="?"
+    return triple
+
 
 def search_in_sentencies2(sentence, sentencies, threshold=0.3):
     """
@@ -63,87 +75,91 @@ def search_in_sentencies2(sentence, sentencies, threshold=0.3):
     #    raise Exception("There are not correspondencies...")
     return most_similar_sentence, max_similarity
 
-
-def search_in_sentencies(sentence, sentencies, threshold=0.3):
+def build_missing_links(subjects, relations, objects, num_rel=3,n=1):
     """
-    Find correspondences between relation and one of relations and return relations which 
-    overcome the threshold
+    This function builds the query triples 
     """
-    #Iterate through relations
-    max_similarity=0
-    most_similar_sentence=""
-    similar_sentencies=[]
+    
+    ########### TF HUB ############
+    # Decommentare il seguente codice se si vuole utilizzare la similarità semantica tra le parole
 
-    for i,sent in enumerate(tqdm(sentencies)):
-        #print("SIMILARITY BETWEEN: \n", sent, sentencies)
-        similarity = sentence_similarity(sent,sentence)   #compute similarity score
-        if similarity > max_similarity:
-            max_similarity=similarity
-            most_similar_sentence=sent
-            similar_sentencies.append(sent)
-    print(similar_sentencies)
-    #if max_similarity < threshold:
-    #    raise Exception("There are not correspondencies...")
-    return most_similar_sentence, max_similarity
+    #embed = tensorflow_hub.Module("https://tfhub.dev/google/universal-sentence-encoder/1")
+    #input1 = tf.placeholder(tf.string)
+    #input2 = tf.placeholder(tf.string)
+    #encode1 = tf.nn.l2_normalize(embed(input1))
+    #encode2 = tf.nn.l2_normalize(embed(input2))
 
-def load_question_from_json(path="Question/question.json"):
-    with open(path, "r") as fp:
-        question=json.load(fp)
-    question=json.loads(question)
-    subj, rel, obj = None, None, None
-    triple = [subj, rel, obj]
-    objs = ("subject", "predicate", "object")
+    ########### TF HUB ############
 
-    for i, obj in enumerate(objs):
-        if question[obj]["type"]=="resource":
-            triple[i] = question[obj]["value"] 
-        elif question[obj]["type"]=="list":
-            x=[]
-            for object_ in question[obj]["list"]:
-                x.append(object_["value"])
-            triple[i] = x
-        elif question[obj]["type"]=="missing":
-            triple[i]="?"
-    return triple
+    triples = load_question_from_json()
 
-def build_links(subjects, relations, objects, num_rel=5):
-    triple = load_question_from_json()
-    new_triples = [0,0,0]
-    d = {0:subjects, 1:relations, 2:objects}
-    for i,element in enumerate(triple):
-        #Se l'elemento è una lista mi prendo l'elemento della lista con il maggiore score 
-        if isinstance(element,list):
-            element = element[0:num_rel]
-            print(element)
-            max_score=0
-            new_sentence=""
-            for el in element:
-                try:
-                    print(el)
-                    sentence,score = search_in_sentencies2(el, d[i], threshold=0.3)
-                    print(sentence, score)
-                    if score > max_score:
-                        max_score=score
-                        new_sentence=sentence
-
-                except Exception as e:
-                    print(e)
-                    continue
-
-            new_triples[i]=new_sentence
+    print("Relations: ", triples[1])
+    sentences = [subjects, relations, objects]
+    new_sentences = [[],[],[]]
+    for i,element in enumerate(triples):
         
-        elif isinstance(element,str):
+        if isinstance(element,list):            
+            #If we have the question e.g. "where is Dante?" we don't query 'is' but we use
+            #words that reminds us to a location
+            if "identity" in element:
+                element.remove("identity")
+                element.insert(0,"is a")
+
+            if "location" in element:
+                if "is" in element:
+                    element.remove("is")
+                if "been" in element:
+                    element.remove("been")
+                element.insert(0,"in")
+            
+            element = element[0:num_rel]
+            element=element[::-1]
+            for el in element:
+                matching = difflib.get_close_matches(el, sentences[i],n=n, cutoff=0.6)
+                print("Element list: ", el)
+
+                #sen,_=search_in_sentencies2(el, sentences[i])
+
+                """
+                s1=[el]
+                s2=sentences[i]
+                sims=[]
+                scores = tf.reduce_sum(tf.multiply(encode1, encode2), axis=1)
+                with tf.Session() as session:
+                    session.run(tf.global_variables_initializer())
+                    session.run(tf.tables_initializer())
+
+                    [similarity] = session.run([scores], feed_dict={
+                        input1: [s for s in s1],
+                        input2: [s for s in s2]
+                    })
+                    
+                #sims = gse([el]*len(sentences[i]), sentences[i] )
+
+                #print("tf hub sim: ", sims)
+                print("Most similar: ", sentences[i][np.argmax(similarity)] )
+                matching+=[sentences[i][np.argmax(similarity)]]
+                """
+                print(matching)
+                
+                new_sentences[i]+=matching
+        
+        elif isinstance(element,str): #Se la risorsa non è una lista
             if element=="?":
-                new_triples[i]=element
+                new_sentences[i]+=[element]
             else:
-                try:
-                    sentence,score = search_in_sentencies2(element, d[i], threshold=0.3)
-                except:
-                    continue
+                matching = difflib.get_close_matches(element, sentences[i],n=n, cutoff=0.6)
+                new_sentences[i]+=matching
 
-                new_triples[i]=sentence
+    max_len = max([len(ref) for ref in new_sentences])
+    
+    print(new_sentences)
+    for ref in new_sentences:
+        print(ref)
+        if len(ref)<max_len:
+            ref+=([ref[-1]]*(max_len-len(ref)))
 
-    return new_triples
+    return new_sentences
 
 
 def load_dataset(path):
@@ -157,25 +173,29 @@ def build_object_missing_triples(subj, rel, objects_dataset):
     triples = []
     for obj in objects_dataset:
         triples.append([subj, rel, obj])
-    return np.array(triples)
+    return triples
 
 def build_subject_missing_triples(obj, rel, subjects_dataset):
     triples = []
     for subj in subjects_dataset:
         triples.append([subj, rel, obj])
-    return np.array(triples)
+    return triples
 
-def link_prediction(subj, rel, obj, subjects, relations, objects):
-    model = restore_model('./best_model.pkl')
-    list_to_iterate=None
-    triple = [subj, rel, obj]
+def link_prediction(model, subj, rel, obj, subjects, relations, objects):
+    #model = restore_model('./best_model.pkl')
+    #triple = [subj, rel, obj]
     triples=[]
-    if subj=="?":
-        triples=build_subject_missing_triples(obj, rel, subjects)
-    else:
-        triples=build_object_missing_triples(subj, rel, objects)
-    #print(triples)
+
+    for s,r,o in zip(subj, rel, obj):
+
+        if s=="?":
+            triples+=build_subject_missing_triples(o, r, subjects)
+        elif o=="?":
+            triples+=build_object_missing_triples(s, r, objects)
+    
     #print(triples.shape)
+    triples=np.array(triples)
+    print("All triples question: ", rel)
     ranks_unseen = evaluate_performance(
         triples, 
         model=model, 
@@ -183,34 +203,38 @@ def link_prediction(subj, rel, obj, subjects, relations, objects):
         use_default_protocol=False, # corrupt subj and obj separately while evaluating
         verbose=True
     )
-    print(ranks_unseen)
     idx=np.argmin(ranks_unseen)
+
+
     response = None
     if subj=="?":
-        response = subjects[idx]
+        response = triples[idx]
     else:
-        response = objects[idx]
+        response = triples[idx]
     return response
     
 
 if __name__=="__main__":
     #sentence_similarity("lost", "misplace")
     #triple=build_links(["Dante","Virgil", "Dante and Virgil"], ["lost","lost in"], ["obj1","obj2"])
-
-    """
-    subjects, relations, objects = load_dataset("Triple/dep_triples.csv")
-    triple=build_links(subjects, relations, objects)
+    model = restore_model('./best_model.pkl')
+    subjects, relations, objects = load_dataset("Triple/complete_triples.csv")
+    triple=build_missing_links(subjects, relations, objects)
     subj, rel, obj = triple[0], triple[1], triple[2]
     print("Triple: \n")
     print(subj, rel, obj)
-    response=link_prediction(subj, rel, obj, subjects, relations, objects)
+    response=link_prediction(model, subj, rel, obj, subjects, relations, objects)
     print(response)
+   
     """
- 
-    subjects, relations, objects = load_dataset("Triple/complete_triples.csv")
+    subjects, relations, objects = load_dataset("Triple/dep_triples.csv")
+    triple=build_missing_links(subjects, relations, objects)
+    print(triple)
+    
     print("ranked" in relations)
     query="ranked"
     print(difflib.get_close_matches(query, relations,n=5))
+    """
     #w,s=search_in_sentencies("ranked", relations, threshold=0.3)
     #print(w)
 

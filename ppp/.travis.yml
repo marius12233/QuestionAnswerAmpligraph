@@ -1,0 +1,34 @@
+
+language: python
+
+python:
+  - 3.2
+  - 3.3
+  - 3.4
+  - pypy3
+
+install:
+    - sudo add-apt-repository ppa:webupd8team/java -y
+    - sudo apt-get update
+    - sudo apt-get install oracle-java8-installer
+    - sudo update-alternatives --set java /usr/lib/jvm/java-8-oracle/jre/bin/java
+    - sudo update-alternatives --set javac /usr/lib/jvm/java-8-oracle/bin/javac
+    - pip install scrutinizer-ocular webtest httmock requests ppp_datamodel ppp_core jsonrpclib-pelix nltk
+    # Coveralls 4.0 doesn't support Python 3.2
+    - if [ "$TRAVIS_PYTHON_VERSION" == "3.2" ]; then travis_retry pip install coverage==3.7.1; fi
+    - if [ "$TRAVIS_PYTHON_VERSION" != "3.2" ]; then travis_retry pip install coverage; fi
+    - echo "y
+        y
+        y
+        " | python -m nltk.downloader wordnet
+
+before_script:
+  - ./dependencies.sh
+  - ./setup.py install
+
+script:
+  - rm ppp_questionparsing_grammatical* -rf
+  - coverage3 run run_tests.py
+
+after_script:
+  - ocular --data-file ".coverage"
