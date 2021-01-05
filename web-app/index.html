@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>SB Admin 2 - Dashboard</title>
+
+    <!-- Custom fonts for this template-->
+    <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link
+        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+        rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="css/sb-admin-2.min.css" rel="stylesheet">
+
+</head>
+
+<body id="page-top" ng-app="app" ng-controller="Controller">
+
+    <div class="row" ng-if="success" id="success">
+        <div class="col-lg-12 mb-12">
+            <div class="card bg-success text-white shadow animated--grow-in">
+                <div class="card-body">
+                    Success operation!
+                    <div class="text-white-50 small">#e74a3b</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" ng-if="failure" id="failure">
+        <div class="col-lg-12 mb-12;">
+            <div class="card bg-danger text-white shadow animated--grow-in z-index: 1;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 20px;">
+                <div class="card-body">
+                    Some errors occur in the last operation...
+                    <div class="text-white-50 small">#e74a3b</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div ng-if="!ready" style="position:fixed;
+    width:100%;
+    height:100%;
+    top:0px;
+    left:0px;
+    z-index:1000;"><img style="width:100%;height:100%;opacity: 0.5;" src="https://media.giphy.com/media/wxr7wQU6mc1YQ/giphy.gif" >
+    </div>
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+            <!-- Sidebar - Brand -->
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+                <div class="sidebar-brand-icon rotate-n-15">
+                    <i class="fas fa-laugh-wink"></i>
+                </div>
+                <div class="sidebar-brand-text mx-3">Ampligraph QA </div>
+            </a>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider my-0">
+
+            <!-- Nav Item - Dashboard -->
+            <li class="nav-item active">
+                <a class="nav-link" href="index.html">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span></a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+
+
+        </ul>
+        <!-- End of Sidebar -->
+
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content" >
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+                    <!-- Sidebar Toggle (Topbar) -->
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+
+
+
+                </nav>
+                <!-- End of Topbar -->
+
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+
+
+            <h1 class="h3 mb-4 text-gray-800">Analyze Text</h1>
+                    <!-- Content Row -->
+                    <div class="row" >
+
+                        <!-- Earnings (Monthly) Card Example -->
+                        <div class="col-lg-6" >
+                            <div class="card border-left-primary shadow mb-4">
+                                <a href="#collapseCardExample2" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample2">
+                                    <h6 class="m-0 font-weight-bold text-primary">Analyze Divina Commedia</h6>
+                                </a>
+                                <div class="collapse " id="collapseCardExample2" style="">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            
+                                        <form class="user">
+                                        <label for="from">From Canto:</label>
+                                            <div class="form-group">
+                                                <select name="Select start Canto" id="from" class="form-control" ng-model="canti.start">
+                                                <option  ng-repeat="n in range(1,31,1)" >{{n}}</option>
+                                                </select>
+                                            </div>
+                                            <label for="to">To Canto:</label>
+                                            <div class="form-group">
+                                                <select name="Select to Canto" id="to" class="form-control" ng-model="canti.stop">
+                                                <option  ng-repeat="n in range(1,31,1)" >{{n}}</option>
+                                                </select>
+                                            </div>
+
+                                            <a class="btn btn-primary btn-user btn-block" ng-click="request()">
+                                                Start
+                                            </a>
+                                            <hr>
+                                        </form>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        
+                            <div class="card border-left-primary shadow mb-4">
+                                <!-- Card Header - Accordion -->
+                                <a href="#collapseCardExample" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample">
+                                    <h6 class="m-0 font-weight-bold text-primary">Analyze custom text</h6>
+                                </a>
+                                <!-- Card Content - Collapse -->
+                                <div class="collapse " id="collapseCardExample" style="">
+                                    <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            
+                                        <form class="user">
+                                        <label for="file">Upload txt file:</label>
+                                            <div class="form-group">
+                                                <input
+                                                id="upload"
+                                                type="file"
+                                                name="upfile"
+                                                onchange="angular.element(this).scope().setFile(this.files);"
+                                                class="form-control">
+                                            </div>
+
+
+                                            <a class="btn btn-primary btn-user btn-block" ng-click="uploadFile()">
+                                                Start
+                                            </a>
+                                            <hr>
+                                        </form>
+                                        </div>
+
+                                    </div>                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <!-- Earnings (Monthly) Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-6" style="height:50%;">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xl font-weight-bold text-success text-uppercase mb-1">
+                                               Train Ampligraph</div>
+                                            <a class="btn btn-success btn-user btn-block" ng-click="train()">
+                                                Train
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <!-- Content Row -->
+                    <hr class="sidebar-divider">
+<h1 class="h3 mb-4 text-gray-800">Visualize data</h1>
+                    <div class="row">
+
+                        <!-- Area Chart -->
+                        <div class="col-xl-12 col-lg-12" style="height:800px;">
+                            <div class="card shadow mb-12" style="height:100%;">
+                                <!-- Card Header - Dropdown -->
+                                <div
+                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Analyze vectorized words</h6>
+                                    <div class="dropdown no-arrow">
+                                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                                        </a>
+
+                                    </div>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                        <iframe style="width:100%;height:100%;" src="https://projector.tensorflow.org/">
+                                    </iframe>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <hr class="sidebar-divider">
+<h1 class="h3 mb-4 text-gray-800">Analyze Divina Commedia</h1>
+                    <!-- Content Row -->
+                    <div class="row">
+
+                        <!-- Content Column -->
+
+
+                        <div class="col-lg-12 mb-12">
+
+                            <!-- Illustrations -->
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Question Answer</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div style="height:300px;overflow-y:scroll;overflow-x:visible">
+
+                                        <div class="row" ng-repeat="msg in messages">
+                                            
+                                            <div class="col-xl-3 col-md-6 mb-4" ng-if="msg.title=='you'" style="height:50%">
+                                                <div class="card border-left-primary shadow h-100 py-2">
+                                                    <div class="card-body">
+                                                        <div class="row no-gutters align-items">
+                                                            <div class="col mr-2">
+                                                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                                    {{msg.title}}</div>
+                                                                    <div>
+                                                            <p>{{msg.q}}</p>
+                                                            </div>
+
+                                                            </div>
+                                                            
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-xl-3 col-md-6 mb-4 offset-md-6" ng-if="msg.title=='bot'" style="height:50%">
+                                                <div class="card border-left-success shadow h-100 py-2" >
+                                                    <div class="card-body">
+                                                        <div class="row no-gutters align-items">
+                                                            <div class="col mr-2">
+                                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                                    {{msg.title}}</div>
+                                                                    <div>
+                                                            <p>{{msg.q}}</p>
+                                                            </div>
+
+                                                            </div>
+                                                            
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            
+                                        </div>
+                                        
+                                        {{pending_msg}}
+
+
+                                    </div>
+                                                        <!-- Topbar Search -->
+                                    <form>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control bg-light border-0 small" placeholder="Make question about data..."
+                                                aria-label="Search" aria-describedby="basic-addon2" ng-model="q">
+                                            <div class="input-group-append">
+                                                <button class="btn btn-primary" type="button" ng-click="query()">
+                                                    <i class="fas fa-paper-plane fa-sm"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                </div>
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Logout Modal-->
+
+
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-primary" href="login.html">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="js/sb-admin-2.min.js"></script>
+
+    <!-- Page level plugins -->
+    <script src="vendor/chart.js/Chart.min.js"></script>
+
+    <!-- Page level custom scripts -->
+    <script src="js/demo/chart-area-demo.js"></script>
+    <script src="js/demo/chart-pie-demo.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.min.js"></script>
+
+    <script>
+    var app = angular.module('app',[]);
+
+      app.controller('Controller',function($scope,$http,$timeout){
+            $scope.ready=true;
+            //Appena viene iniettato il controller chiama il metodo get per prendere le news da visualizzare nel carousel
+            $scope.canti={start:0, stop:0}
+            $scope.q="";
+            $scope.messages=[]
+            $scope.pending_msg="";
+            $scope.success=false;
+            $scope.failure=false;
+
+            var on_request_end=function(){
+                $scope.failure=false;
+                $scope.success=false;
+            }
+
+            $scope.request=function(){
+                console.log($scope.canti.start);
+                console.log($scope.canti.stop);
+                $scope.ready=false;
+                $http.get("http://localhost:5001/analyze_canti?start="+$scope.canti.start+"&stop="+$scope.canti.stop)
+                .success(function(response){
+                    $scope.ready=true;
+                    $scope.success=true;
+                    console.log(response)
+                    $timeout(on_request_end, 3000);
+                })
+                .error(function(response){
+                    console.log(response);
+                    
+                    $scope.ready=true;
+                    $scope.failure=true;
+                    $timeout(on_request_end, 4000);
+                })
+                
+            }
+
+            $scope.train=function(){
+                $scope.ready=false
+                $http.get("http://localhost:5001/train")
+                .success(function(response){
+                    
+                    $scope.ready=true;
+                    $scope.success=1;
+                    console.log(response)
+                    $timeout(on_request_end, 4000);
+                })
+                .error(function(response){
+                    console.log(response);
+                    $scope.ready=true;
+                    $scope.failure=1;
+                    $timeout(on_request_end, 4000);
+                })
+                
+            }
+
+            $scope.query=function(){
+                var q = $scope.q
+                var msg = {q:q, title:"you"}
+                $scope.messages.push(msg)
+                console.log($scope.messages)
+                $scope.q="";
+                $scope.pending_msg="is typing..."
+                $http.get("http://localhost:5001/query?q="+q)
+                .success(function(response){
+                    console.log(response)
+                    $scope.pending_msg=""
+                    var msg = {q:response.result.data, title:"bot"}
+                    $scope.messages.push(msg)
+                })
+                .error(function(response){
+                    console.log(response);
+                })
+            }
+
+            $scope.setFile = function(file){
+                console.log(file);
+                $scope.upfile = file[0];
+                console.log($scope.upfile);
+            }
+
+            $scope.uploadFile = function(){
+                var payload = new FormData();
+                payload.append("file", $scope.upfile);
+                $http({
+                    url:"http://localhost:5001/upload",
+                    method:"POST",
+                    data:payload,
+                    headers:{'Content-Type':undefined},
+                    transformRequest:angular.identity
+                })
+                .success(function(response){
+                    console.log(response);
+                })
+                .error(function(response){
+                    console.log(response);
+                })
+            }
+
+            $scope.range = function(min, max, step) {
+            step = step || 1;
+            console.log("=====================");
+            var input = [];
+            for (var i = min; i <= max; i += step) {
+                input.push(i);
+            }
+            return input;
+        };
+      });
+    
+    </script>
+
+</body>
+
+</html>
